@@ -1,0 +1,6 @@
+*.exe
+.idea
+tmp
+build
+.env
+
