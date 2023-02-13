@@ -1,0 +1,1 @@
+go run broker-service/cmd/api/*.go
