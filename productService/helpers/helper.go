@@ -25,3 +25,18 @@ func WriteJSON(res http.ResponseWriter, status int, data interface{}, headers ..
 
 	return nil
 }
+
+// Read JSON Data
+func ReadJSON(res http.ResponseWriter, req *http.Request, data interface{}) error {
+	maxBytes := 1048576 // bytes = 1 MB // Maximum size of the body
+
+	// Limit the size of the body
+	req.Body = http.MaxBytesReader(res, req.Body, int64(maxBytes))
+
+	decoder := json.NewDecoder(req.Body)
+	err := decoder.Decode(data)
+	if err != nil {
+		return err
+	}
+	return nil
+}
