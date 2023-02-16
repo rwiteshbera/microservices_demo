@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/gorilla/mux"
 	"github.com/rwiteshbera/microservices_demo/productService/handlers"
 	"log"
 	"net/http"
@@ -9,11 +10,20 @@ import (
 )
 
 func main() {
-	logger := log.New(os.Stdout, "broker_api\t", log.LstdFlags)
-	brokerHandler := handlers.NewProducts(logger)
+	logger := log.New(os.Stdout, "product_api\t", log.LstdFlags)
+	//Create the handler
+	productHandler := handlers.NewProductHandler(logger)
 
-	mux := http.NewServeMux()
-	mux.Handle("/api/products", brokerHandler)
+	// Create a serve mux and register the handler
+	mux := mux.NewRouter()
+
+	// Get SubRouter to handle GET Request
+	GetRouter := mux.Methods(http.MethodGet).Subrouter()
+	GetRouter.HandleFunc("/api/products", productHandler.GetProducts)
+
+	// Post SubRouter to handle POST
+	PostRouter := mux.Methods(http.MethodPost).Subrouter()
+	PostRouter.HandleFunc("/api/products", productHandler.AddProduct)
 
 	server := &http.Server{
 		Addr:         "localhost:9091",
