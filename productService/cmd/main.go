@@ -25,6 +25,7 @@ func main() {
 	// Post SubRouter to handle POST
 	PostRouter := router.Methods(http.MethodPost).Subrouter()
 	PostRouter.HandleFunc("/api/products", productHandler.AddProduct)
+	PostRouter.Use(middlewares.MiddlewareProductValidator)
 
 	GetRouter.HandleFunc("/{id:[0-9]+}", productHandler.GetProduct)
 	GetRouter.Use(middlewares.MiddlewareProductValidator)

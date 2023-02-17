@@ -1,10 +1,13 @@
 package data
 
-import "time"
+import (
+	"github.com/go-playground/validator/v10"
+	"time"
+)
 
 type Product struct {
 	ID          int     `json:"id"`
-	Name        string  `json:"name"`
+	Name        string  `json:"name" validate:"required"`
 	Description string  `json:"description"`
 	Price       float32 `json:"price"`
 	CreatedOn   string  `json:"createdOn"`
@@ -44,4 +47,9 @@ var productList = []*Product{
 		CreatedOn:   time.Now().UTC().String(),
 		UpdatedOn:   time.Now().UTC().String(),
 	},
+}
+
+func (p *Product) Validate() error {
+	validate := validator.New()
+	return validate.Struct(p)
 }
