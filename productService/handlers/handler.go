@@ -1,10 +1,13 @@
 package handlers
 
 import (
+	"errors"
+	"github.com/gorilla/mux"
 	"github.com/rwiteshbera/microservices_demo/productService/data"
 	"github.com/rwiteshbera/microservices_demo/productService/helpers"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 type Products struct {
@@ -36,4 +39,37 @@ func (product *Products) AddProduct(res http.ResponseWriter, req *http.Request) 
 	}
 
 	data.AddProduct(reqData)
+}
+
+func (product *Products) GetProduct(res http.ResponseWriter, req *http.Request) {
+	query := mux.Vars(req)
+	id := query["id"]
+	product.logger.Println("Handle Find Product Request")
+
+	idINT, err := strconv.Atoi(id)
+	if err != nil {
+		http.Error(res, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	productData, err := findProduct(idINT)
+	if err != nil {
+		http.Error(res, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	err = helpers.WriteJSON(res, http.StatusOK, productData)
+	if err != nil {
+		http.Error(res, err.Error(), http.StatusInternalServerError)
+		return
+	}
+}
+
+// Find Product
+func findProduct(id int) (*data.Product, error) {
+	for _, p := range data.GetProducts() {
+		if p.ID == id {
+			return p, nil
+		}
+	}
+	return nil, errors.New("product not found")
 }

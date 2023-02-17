@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/gorilla/mux"
 	"github.com/rwiteshbera/microservices_demo/productService/handlers"
+	"github.com/rwiteshbera/microservices_demo/productService/middlewares"
 	"log"
 	"net/http"
 	"os"
@@ -15,19 +16,22 @@ func main() {
 	productHandler := handlers.NewProductHandler(logger)
 
 	// Create a serve mux and register the handler
-	mux := mux.NewRouter()
+	router := mux.NewRouter()
 
 	// Get SubRouter to handle GET Request
-	GetRouter := mux.Methods(http.MethodGet).Subrouter()
+	GetRouter := router.Methods(http.MethodGet).Subrouter()
 	GetRouter.HandleFunc("/api/products", productHandler.GetProducts)
 
 	// Post SubRouter to handle POST
-	PostRouter := mux.Methods(http.MethodPost).Subrouter()
+	PostRouter := router.Methods(http.MethodPost).Subrouter()
 	PostRouter.HandleFunc("/api/products", productHandler.AddProduct)
+
+	GetRouter.HandleFunc("/{id:[0-9]+}", productHandler.GetProduct)
+	GetRouter.Use(middlewares.MiddlewareProductValidator)
 
 	server := &http.Server{
 		Addr:         "localhost:9091",
-		Handler:      mux,
+		Handler:      router,
 		IdleTimeout:  2 * time.Minute,
 		ReadTimeout:  1 * time.Second,
 		WriteTimeout: 1 * time.Second,
