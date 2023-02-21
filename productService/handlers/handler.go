@@ -2,12 +2,13 @@ package handlers
 
 import (
 	"errors"
-	"github.com/gorilla/mux"
-	"github.com/rwiteshbera/microservices_demo/productService/data"
-	"github.com/rwiteshbera/microservices_demo/productService/helpers"
 	"log"
 	"net/http"
 	"strconv"
+
+	"github.com/gorilla/mux"
+	"github.com/rwiteshbera/microservices_demo/productService/data"
+	"github.com/rwiteshbera/microservices_demo/productService/helpers"
 )
 
 type Products struct {
