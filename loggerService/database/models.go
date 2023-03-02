@@ -5,7 +5,9 @@ import (
 	"log"
 	"time"
 
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 var client *mongo.Client
@@ -44,4 +46,37 @@ func (l *LogEntry) Insert(entry LogEntry) error {
 		return err
 	}
 	return nil
+}
+
+func (l *LogEntry) All() ([]*LogEntry, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
+
+	collection := client.Database("logs").Collection("logs")
+
+	opts := options.Find()
+	opts.SetSort(bson.D{{"created_at", -1}})
+
+	cursor, err := collection.Find(context.TODO(), bson.D{}, opts)
+	if err != nil {
+		log.Println("finding all docs error:", err.Error())
+		return nil, err
+	}
+
+	defer cursor.Close(ctx)
+
+	var results []*LogEntry
+
+	for cursor.Next(ctx) {
+		var item LogEntry
+		err := cursor.Decode(&item)
+		if err != nil {
+			log.Print("error decoding results:", err.Error())
+			return nil, err
+		} else {
+			results = append(results, &item)
+		}
+	}
+
+	return results, nil
 }
