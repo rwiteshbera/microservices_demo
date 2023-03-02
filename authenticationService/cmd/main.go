@@ -14,6 +14,7 @@ func main() {
 	log.Println("Starting authentication service")
 
 	router := mux.NewRouter()
+
 	PostROUTER := router.Methods(http.MethodPost).Subrouter()
 	PostROUTER.HandleFunc("/signup", handlers.SignupRouter)
 
