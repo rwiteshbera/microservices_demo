@@ -1,23 +1,27 @@
 package main
 
 import (
-	"github.com/rwiteshbera/microservices_demo/brokerService/api"
 	"log"
 	"net/http"
 	"os"
 	"time"
+
+	"github.com/gorilla/mux"
+	"github.com/rwiteshbera/microservices_demo/brokerService/api"
 )
 
 func main() {
 	logger := log.New(os.Stdout, "broker_api\t", log.LstdFlags)
-	brokerHandler := api.NewBroker(logger)
+	broker := api.NewBroker(logger)
 
-	mux := http.NewServeMux()
-	mux.Handle("/api/broker", brokerHandler)
+	router := mux.NewRouter()
+
+	PostRouter := router.Methods(http.MethodPost).Subrouter()
+	PostRouter.HandleFunc("/broker", broker.CallBroker)
 
 	server := &http.Server{
 		Addr:         "localhost:9090",
-		Handler:      mux,
+		Handler:      router,
 		IdleTimeout:  2 * time.Minute,
 		ReadTimeout:  1 * time.Second,
 		WriteTimeout: 1 * time.Second,

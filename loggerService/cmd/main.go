@@ -8,12 +8,13 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/rwiteshbera/microservices_demo/loggerService/database"
+	"github.com/rwiteshbera/microservices_demo/loggerService/handlers"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 const (
-	webPORT  = "80"
+	webPORT  = "8000"
 	rpcPORT  = "5001"
 	mongoURL = "mongodb://localhost:27017"
 	grpcPORT = "50001"
@@ -29,7 +30,7 @@ func main() {
 	// Connect to MONGODB
 	mongoClient, err := connectToMongo()
 	if err != nil {
-		log.Panic(err)
+		log.Panic(err.Error())
 	}
 
 	client = mongoClient
@@ -53,6 +54,10 @@ func main() {
 
 func (app *Config) serve() {
 	router := mux.NewRouter()
+
+	PostRouter := router.Methods(http.MethodPost).Subrouter()
+	PostRouter.HandleFunc("/log", handlers.WriteLog)
+
 	server := &http.Server{
 		Addr:         "localhost:" + webPORT,
 		Handler:      router,
@@ -68,18 +73,16 @@ func (app *Config) serve() {
 }
 
 func connectToMongo() (*mongo.Client, error) {
-	// Create the connection option
-	clientOptions := options.Client().ApplyURI(mongoURL)
-	clientOptions.SetAuth(options.Credential{
-		Username: "admin",
-		Password: "password",
-	})
-
-	// Connect
-	c, err := mongo.Connect(context.TODO(), clientOptions)
+	client, err := mongo.NewClient(options.Client().ApplyURI(mongoURL))
 	if err != nil {
-		log.Println("error connecting : ", err.Error())
+		log.Panic(err.Error())
 		return nil, err
 	}
-	return c, nil
+
+	err = client.Connect(context.TODO())
+	if err != nil {
+		log.Panic(err.Error())
+		return nil, err
+	}
+	return client, nil
 }

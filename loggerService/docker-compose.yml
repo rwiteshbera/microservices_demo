@@ -1,0 +1,10 @@
+version: "3.8"
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    volumes:
+      - /home/rwitesh/Documents/container:/data/db
+    ports:
+      - 27017:27107
+    restart: always
