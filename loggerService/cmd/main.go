@@ -3,8 +3,11 @@ package main
 import (
 	"context"
 	"log"
+	"net/http"
 	"time"
 
+	"github.com/gorilla/mux"
+	"github.com/rwiteshbera/microservices_demo/loggerService/database"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -19,6 +22,7 @@ const (
 var client *mongo.Client
 
 type Config struct {
+	Models database.Models
 }
 
 func main() {
@@ -39,6 +43,28 @@ func main() {
 			log.Panic(err)
 		}
 	}()
+
+	app := Config{
+		Models: database.New(client),
+	}
+
+	app.serve()
+}
+
+func (app *Config) serve() {
+	router := mux.NewRouter()
+	server := &http.Server{
+		Addr:         "localhost:" + webPORT,
+		Handler:      router,
+		IdleTimeout:  1 * time.Minute,
+		ReadTimeout:  1 * time.Second,
+		WriteTimeout: 1 * time.Second,
+	}
+
+	err := server.ListenAndServe()
+	if err != nil {
+		log.Panic(err.Error())
+	}
 }
 
 func connectToMongo() (*mongo.Client, error) {
